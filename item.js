@@ -31,4 +31,9 @@ Schema.statics.deleteItem = async function (id) {
    return await this.deleteOne({_id: id});
 }
 
+
+Schema.statics.getItem = async function (value) {
+  return await this.findOne({item: value});
+}
+
 module.exports = mongoose.model('person', Schema);

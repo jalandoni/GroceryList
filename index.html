@@ -198,7 +198,7 @@
                 $(".classList").hide();
             }
             function addRow(element) {
-                console.log("Adding row...")
+                console.log(element);
                 var info = ["item", "quantity", "priority"];
                 var row = $("<tr>", {
                     id: element._id,
@@ -212,6 +212,7 @@
                 }
                 $(row).append("<td> <button class='btn btn-success btn-xs update btn-outline-success'>Update</button> <button class='btn btn-success btn-xs delete btn-outline-success'>Delete</button>");
                 $("tbody").append($(row));
+
             }
 
             function retrieveItem(id) {
@@ -229,14 +230,14 @@
                         console.log("error")
                     }
                 })
+
             }
             function retrieveAll() {
-                $("tbody tr").remove();
                 $.ajax({
                     type: "get",
                     url: "/item/retrieve/all",
                     success: function (response) {
-                        console.log("success")
+                        $("tbody tr").remove();
                         response.forEach(function (element) {
                             addRow(element);
                         })
@@ -274,32 +275,42 @@
                         text: 'Quantity is 0!'
                     })
                 }
-                else if (item != "" && quantity != "" && priority != "") {
-                    Swal.fire({
-                        type: "success",
-                        title: 'SUCCESS',
-                        text: 'Successfully created!'
-                    })
+                 else if (item != "" && quantity != "" && priority != "") {
+                  
+                   $.ajax({
+                       type: "put",
+                       url: "http://localhost:3000/item/create",
+                       crossDomain: true,
+                       data: JSON.stringify({ item: item, quantity: quantity, priority: priority }),
+                       success: function (response) {
+                           if (response == "Item has already taken!") {
+                               Swal.fire({
+                               type: "error",
+                               title: 'ERROR',
+                               text: response
+                           })
+                           } else {
+                                hideForm();
+                               Swal.fire({
+                                   type: "success",
+                                   title: 'SUCCESS',
+                                   text: 'Successfully created!'
+                               })
+                               response.forEach(function (element) {
+                                   addRow(element);
+                               })
+                            var item = $("#item").val('');
+                            var quantity = $("#quantity").val('');
+                            var priority = $("#priority").val('');
+                           }
+                       },
+                       error: function (err) {
+                           console.log('error');
+                       }
+                   })
+               }
+    
 
-                    hideForm();
-                    $.ajax({
-                        type: "put",
-                        url: "http://localhost:3000/item/create",
-                        crossDomain: true,
-                        data: JSON.stringify({ item: item, quantity: quantity, priority: priority }),
-                        success: function (response) {
-                            response.forEach(function (element) {
-                                addRow(element);
-                            })
-                        },
-                        error: function (err) {
-                            console.log('error');
-                        }
-                    })
-                }
-                var item = $("#item").val('');
-                var quantity = $("#quantity").val('');
-                var priority = $("#priority").val('');
 
             });
 
@@ -336,29 +347,39 @@
                             text: 'Quantity is 0!'
                         })
                     }
-                    else if (item != "" && quantity != "" && priority != "") {
-                        Swal.fire({
-                            type: "success",
-                            title: 'SUCCESS',
-                            text: 'Successfully updated!'
-                        })
-                        hideForm();
-                        console.log(idUpdate);
-                        $.ajax({
-                            type: "post",
-                            url: "http://localhost:3000/item/update",
-                            crossDomain: true,
-                            data: JSON.stringify({ id: idUpdate, item: item, quantity: quantity, priority: priority }),
-                            success: function (response) {
-                                retrieveAll();
-                            },
-                            error: function (err) {
-                                console.log('error');
-                            }
-                        })
-                    }
-                });
-            });
+                       else if (item != "" && quantity != "" && priority != "") {
+                       
+                       console.log(idUpdate);
+                       $.ajax({
+                           type: "post",
+                           url: "http://localhost:3000/item/update",
+                           crossDomain: true,
+                           data: JSON.stringify({ id: idUpdate, item: item, quantity: quantity, priority: priority }),
+                           success: function (response) {
+                               if (response == "Item has already taken!") {
+                                   Swal.fire({
+                                       type: "error",
+                                       title: 'ERROR',
+                                       text: response
+                                   })
+                               } else {
+                                    hideForm();
+                                   Swal.fire({
+                                       type: "success",
+                                       title: 'SUCCESS',
+                                       text: 'Successfully updated!'
+                                   })
+                                   retrieveAll();
+                               }
+                           },
+                           error: function (err) {
+                               console.log('error');
+                           }
+                       })
+                   }
+               });
+           });
+
 
 
             $(document).on("click", ".delete", function () {

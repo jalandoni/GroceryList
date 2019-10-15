@@ -28,19 +28,26 @@ app.get("/item/retrieve/all", function (req, res) {
 	test2();
 })
 
+
 app.put("/item/create", function (req, res) {
 	console.log("creating...");
 	req.on('data', function (req) {
 		store = JSON.parse(req);
 		const test2 = async function () {
-			const data = {
-				item: store.item,
-				quantity: store.quantity,
-				priority: store.priority
+			const test = await items.getItem(store.item);
+			console.log(test);
+			if (test == null) {
+				const data = {
+					item: store.item,
+					quantity: store.quantity,
+					priority: store.priority
+				}
+				await items.addPerson(data);
+				const item = await items.getLastItem()
+				res.send(item)
+			} else {
+				res.send("Item has already taken!")
 			}
-			await items.addPerson(data);
-			const item = await items.getLastItem();
-			res.send(item)
 		}
 		test2();
 	});
@@ -65,9 +72,14 @@ app.post("/item/update", function (req, res) {
 		store = JSON.parse(req);
 		console.log(store.id);
 		const test = async function () {
-			const result = await items.updateItem(store.id, store.item, store.quantity, store.priority);
-			const updated = await items.findItem(store.id);
-			res.send(updated);
+			const test1 = await items.getItem(store.item);
+			if (test1 == null) {
+				const result = await items.updateItem(store.id, store.item, store.quantity, store.priority);
+				const updated = await items.findItem(store.id);
+				res.send(updated)
+			} else {
+				res.send("Item has already taken!")
+			}
 		}
 		test();
 	})
